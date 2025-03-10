@@ -73,7 +73,7 @@ func Handler(h interface{}, status int, options ...func(*Route)) gin.HandlerFunc
 			input := reflect.New(in)
 			// Bind the body with the hook.
 			if err := bindHook(c, input.Interface()); err != nil {
-				handleError(c, BindError{message: err.Error(), typ: in})
+				handleError(c, BindError{message: err.Error(), typ: in, validationErr: err})
 				return
 			}
 			// Bind query-parameters.
@@ -164,6 +164,13 @@ func RegisterValidation(tagName string, validationFunc validator.Func) error {
 func RegisterTagNameFunc(registerTagFunc validator.TagNameFunc) {
 	initValidator()
 	validatorObj.RegisterTagNameFunc(registerTagFunc)
+}
+
+// UseValidator sets the validator.Validate instance to use during the binding and validation process.
+func UseValidator(v *validator.Validate) {
+	validatorOnce.Do(func() {
+		validatorObj = v
+	})
 }
 
 func initValidator() {
